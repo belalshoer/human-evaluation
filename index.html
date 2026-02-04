@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Figure Equivalence Annotation</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; }
+    .card { max-width: 1100px; margin: auto; border: 1px solid #ddd; border-radius: 12px; padding: 16px; }
+    .row { display: flex; gap: 16px; margin-top: 12px; }
+    .col { flex: 1; text-align: center; }
+    img { max-width: 100%; max-height: 420px; border: 1px solid #eee; border-radius: 10px; cursor: zoom-in; }
+    .q { margin-top: 14px; }
+    button { padding: 10px 14px; border-radius: 10px; }
+    textarea { width: 100%; min-height: 80px; }
+    .status { margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Figure Equivalence Annotation</h2>
+
+  <p><b>Task:</b> Decide whether Figure A and Figure B are <b>functionally equivalent</b>.</p>
+  <p><b>Definition:</b> Two figures are functionally equivalent if they represent the same mathematical object or claim and would support the same downstream reasoning or conclusions, even if they differ visually.</p>
+
+  <div class="q">
+    <b>Annotator ID:</b><br/>
+    <input id="annotator" placeholder=""/>
+  </div>
+
+  <hr/>
+
+  <div id="main" style="display:none;">
+    <div><b>Set:</b> <span id="setId"></span></div>
+    <div><b>Pair:</b> <span id="pairId"></span> (<span id="progress"></span>)</div>
+
+    <div class="row">
+      <div class="col">
+        <b>Figure A</b><br/>
+        <img id="imgA"/>
+      </div>
+      <div class="col">
+        <b>Figure B</b><br/>
+        <img id="imgB"/>
+      </div>
+    </div>
+
+    <div class="q">
+      <b>Equivalent?</b><br/>
+      <label><input type="radio" name="eq" value="Yes"> Yes</label>
+      <label><input type="radio" name="eq" value="No"> No</label>
+      <label><input type="radio" name="eq" value="Unsure"> Unsure</label>
+    </div>
+
+    <div class="q">
+      <b>Confidence</b><br/>
+      <select id="conf">
+        <option value=""></option>
+        <option>1</option><option>2</option><option>3</option>
+        <option>4</option><option>5</option>
+      </select>
+    </div>
+
+    <div class="q">
+      <b>Notes (optional)</b><br/>
+      <textarea id="notes"></textarea>
+    </div>
+
+    <button id="submit">Submit & Next</button>
+    <div id="status" class="status"></div>
+  </div>
+</div>
+
+<script>
+/* ========= CONFIG ========= */
+
+const FORM_URL = "https://docs.google.com/forms/u/0/d/e/1FAIpQLSdYFJg34ChTWDNUDfvD9PBelGif_YPsFbUAnRGaChqnqTYXRg/formResponse";
+
+const ENTRY = {
+  annotator: "entry.2089951439",
+  setId: "entry.1946708910",
+  pairId: "entry.1572187469",
+  equivalent: "entry.164814431",
+  confidence: "entry.1954994022",
+  notes: "entry.772429984"
+};
+
+/* ========= LOGIC ========= */
+
+let data, idx = 0;
+
+fetch("pairs.json").then(r => r.json()).then(j => {
+  data = j;
+  document.getElementById("setId").textContent = data.set_id;
+  document.getElementById("main").style.display = "block";
+  render();
+});
+
+function render() {
+  const p = data.pairs[idx];
+  document.getElementById("pairId").textContent = p.pair_id;
+  document.getElementById("progress").textContent = `${idx+1}/${data.pairs.length}`;
+  document.getElementById("imgA").src = p.left_src;
+  document.getElementById("imgB").src = p.right_src;
+  document.querySelectorAll("input[name=eq]").forEach(x => x.checked = false);
+  document.getElementById("conf").value = "";
+  document.getElementById("notes").value = "";
+}
+
+document.getElementById("submit").onclick = async () => {
+  const annotator = document.getElementById("annotator").value.trim();
+  const eq = document.querySelector("input[name=eq]:checked")?.value;
+  const conf = document.getElementById("conf").value;
+  if (!annotator || !eq || !conf) {
+    document.getElementById("status").textContent = "Please fill required fields.";
+    return;
+  }
+
+  const body = new URLSearchParams();
+  body.append(ENTRY.annotator, annotator);
+  body.append(ENTRY.setId, data.set_id);
+  body.append(ENTRY.pairId, data.pairs[idx].pair_id);
+  body.append(ENTRY.equivalent, eq);
+  body.append(ENTRY.confidence, conf);
+  body.append(ENTRY.notes, document.getElementById("notes").value);
+
+  await fetch(FORM_URL, {
+    method: "POST",
+    mode: "no-cors",
+    body
+  });
+
+  idx++;
+  if (idx < data.pairs.length) render();
+  else document.body.innerHTML = "<h3>Done. Thank you!</h3>";
+};
+</script>
+
+</body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "set_id": "S1",
+  "pairs": [
+    {
+      "pair_id": "S1-P01",
+      "left_src": "images/S1_P01_A.jpg",
+      "right_src": "images/S1_P01_B.jpg"
+    },
+    {
+      "pair_id": "S1-P02",
+      "left_src": "images/S1_P02_A.jpg",
+      "right_src": "images/S1_P02_B.jpg"
+    },
+    {
+      "pair_id": "S1-P03",
+      "left_src": "images/S1_P03_A.jpg",
+      "right_src": "images/S1_P03_B.jpg"
+    },
+    {
+      "pair_id": "S1-P04",
+      "left_src": "images/S1_P04_A.jpg",
+      "right_src": "images/S1_P04_B.jpg"
+    },
+    {
+      "pair_id": "S1-P05",
+      "left_src": "images/S1_P05_A.jpg",
+      "right_src": "images/S1_P05_B.jpg"
+    }
+  ]
+}
